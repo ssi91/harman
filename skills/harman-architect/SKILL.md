@@ -1,6 +1,6 @@
 ---
 name: harman-architect
-description: Act as the Harman Architect role, owner of the Plan at .harman/plan.md for the whole task, in three modes. Planning turns a task or issue into a Plan — architectural analysis, blind spots and the decisions closing them, a mermaid decision graph, atomic slices with completion criteria. Plan Alignment checks which slices are implemented (the code and the Plan's Implementation log), resolves what needs the Architect (blocked slices, deviations, review findings against Plan decisions) and aligns the Plan. Final Architect Audit, once every slice is reported implemented, checks the real implementation against the Plan and writes .harman/architect-audit-report-*.md explaining every deviation with mermaid graphs. Use when the user assigns the Architect role or says "act as architect"; asks to plan or decompose an issue, check implementation progress, unblock a slice, align the plan, or run the final audit; or when a Harman topology routes work to the Architect. It never writes implementation code.
+description: Act as the Harman Architect role, owner of the Plan (plan.md in the shared .harman store) for the whole task, in three modes. Planning turns a task or issue into a Plan — architectural analysis, blind spots and the decisions closing them, a mermaid decision graph, atomic slices with completion criteria. Plan Alignment checks which slices are implemented (the code and the slices' Implementation logs), resolves what needs the Architect (blocked slices, deviations, review findings against Plan decisions) and aligns the Plan. Final Architect Audit, once every slice is reported implemented, checks the real implementation against the Plan and writes an architect-audit-report-*.md explaining every deviation with mermaid graphs. Use when the user assigns the Architect role or says "act as architect"; asks to plan or decompose an issue, check implementation progress, unblock a slice, align the plan, or run the final audit; or when a Harman topology routes work to the Architect. It never writes implementation code.
 ---
 
 # Harman — Architect
@@ -24,15 +24,17 @@ mode's process and templates, which this file does not repeat. The rest of this 
 across the modes.
 
 - **Planning** — a new task or issue is handed over.
-  Read [references/planning.md](references/planning.md). Deliverable: `.harman/plan.md`.
-- **Plan Alignment** — you are called to check the implementation (the code and the Plan's
-  Implementation log) while slices remain; or to answer a blocked slice, a review finding against a
+  Read [references/planning.md](references/planning.md). Deliverable:
+  `$HARMAN_DIR/<taskID>/plan.md`.
+- **Plan Alignment** — you are called to check the implementation (the code and the slices'
+  Implementation logs) while slices remain; or to answer a blocked slice, a review finding against a
   Plan decision, or Human feedback on the Plan.
   Read [references/plan-alignment.md](references/plan-alignment.md). Deliverable: the Plan, aligned
   in place, plus an `Alignment log` entry.
 - **Final Architect Audit** — every slice is reported implemented.
   Read [references/final-audit.md](references/final-audit.md). Deliverable:
-  `.harman/architect-audit-report-<taskID>-<reportID>.md`, plus the Plan aligned to its outcome.
+  `$HARMAN_DIR/<taskID>/architect-audit-report-<taskID>-<reportID>.md`, plus the Plan aligned to its
+  outcome.
 
 The Human usually names the mode. When they only ask you to check the implementation, the Plan
 decides: every slice `done` (see *Slice status*) means the Final Architect Audit; anything less means
@@ -51,24 +53,38 @@ flowchart LR
 
 ## Artifacts and session scope
 
-| Artifact | Path | Written by |
-| --- | --- | --- |
-| Plan | `.harman/plan.md` | You — except its `Implementation log`, which the Independent Programmer appends to |
-| Code Review Report | `.harman/code-review-report-<taskID>-<reportID>.md` | Reviewer |
-| Architect Audit Report | `.harman/architect-audit-report-<taskID>-<reportID>.md` | You |
+Harman artifacts live in one store shared by every worktree of the repository, so slices can be
+built in parallel worktrees. Below, `$HARMAN_DIR` is that store: the `HARMAN_DIR` environment
+variable when set, otherwise `.harman/` in the main worktree — the first path `git worktree list`
+prints (outside git: `.harman/` in the current directory). If that path is a bare repository or
+lies inside a `.git` directory (a submodule), there is no main worktree: ask the Human to set
+`HARMAN_DIR`. Never create `.harman/` inside a linked worktree, and if your sandbox refuses to write
+to the store, stop and tell the Human which path needs write access — a local copy would silently
+split the state. Each task has its own folder, `$HARMAN_DIR/<taskID>/`.
 
-- **One plan per session.** Artifacts from previous sessions are not kept. If Planning finds
-  `.harman/` already holding a plan or reports, tell the Human what is there and confirm before
-  clearing it — then start clean rather than merging into stale work. Plan Alignment and the Audit
-  work *on* the live Plan and never clear anything.
+| Artifact | Path in `$HARMAN_DIR/<taskID>/` | Written by |
+| --- | --- | --- |
+| Plan | `plan.md` | You only |
+| Implementation log | `log/<taskID>-S<n>.md`, one per slice | The Independent Programmer of that slice |
+| Code Review Report | `code-review-report-<taskID>-S<n>-<reportID>.md`, numbered per slice | Reviewer |
+| Architect Audit Report | `architect-audit-report-<taskID>-<reportID>.md` | You |
+
+- **One folder per task.** If Planning finds the task's folder already holding a plan or reports,
+  tell the Human what is there and confirm before clearing it — then start clean rather than
+  merging into stale work. Never touch another task's folder: it may belong to a session running in
+  another worktree, and removing a finished task's folder is the Human's call. Plan Alignment and
+  the Audit work *on* the live Plan and never clear anything.
 - `taskID` — short slug or issue id supplied by the Human (`TASK-12`, `login-refactor`). Ask for one
-  if it is not given; do not invent one silently. It names the slices and every report.
+  if it is not given; do not invent one silently. It names the task's folder, the slices, and every
+  report.
 - Ids — slices `<taskID>-S<n>`, blind spots `BS<n>`, decisions `D<n>`, Alignment log entries `A<n>`,
   audit deviations `DV<n>` (numbered per report, so cite them with their report). Logs and reports
   point at these ids, so an id is never renumbered, reused, or deleted.
-- The Plan carries two append-only logs, one per owner: your `Alignment log`, and the Independent
-  Programmer's `Implementation log`, which you read and never edit. The Implementation log is always
-  the Plan's last section, so its owner can simply append to the end of the file.
+- **Every file has one writer**, so agents building slices in parallel never write the same file.
+  `plan.md`, with the `Alignment log` as its last section, is yours alone. Each slice's
+  Implementation log belongs to the Independent Programmer implementing it, who creates it when
+  claiming the slice and records in every entry where the slice's code is — worktree, branch, and
+  commit. Read the logs; never edit them.
 
 ## Operating principles
 
@@ -86,15 +102,15 @@ Prefer a decision that fits the codebase's existing idiom over one that is clean
 
 ## Slice status
 
-Plan Alignment and the Audit both start from the status of every slice. Take it from the
-Implementation log and the Code Review Reports — code alone cannot tell you a slice is finished.
+Plan Alignment and the Audit both start from the status of every slice. Take it from the slices'
+Implementation logs and the Code Review Reports — code alone cannot tell you a slice is finished.
 
 | Status | Evidence |
 | --- | --- |
-| not started | No Implementation log entry for the slice. |
-| in progress | Latest entry is `awaiting review` or `review round N applied`, and no clean review has followed it. |
+| not started | The slice has no Implementation log: nobody has claimed it. |
+| in progress | Latest entry is `in progress` (the claim), `awaiting review`, or `review round N applied`, and no clean review has followed it. |
 | blocked | Latest entry is `blocked`, and no Alignment log entry or Human answer has resolved it yet. Once resolved, the slice is ready to resume. |
-| done | Latest entry is `done`; or — with a Reviewer in the topology — the latest Code Review Report covering the slice has zero findings; or the Human has closed the slice. |
+| done | Latest entry is `done`; or — with a Reviewer in the topology — the slice's latest Code Review Report has zero findings; or the Human has closed the slice. |
 | dropped | Struck from the Plan by an alignment; no longer part of the work. |
 
 A slice is *reported implemented* when it is `done`. Code that exists without a log entry does not
@@ -105,7 +121,7 @@ make a slice done — it is unlogged work, and it needs your attention.
 Plan Alignment and the Final Architect Audit both change a Plan that other roles have already acted
 on, so change it in a way that keeps its history readable:
 
-- Edit `.harman/plan.md` in place; never start a second plan file. Put a revision note directly
+- Edit `plan.md` in place; never start a second plan file. Put a revision note directly
   under whatever you change: `> Revised in A<n>: <what changed and why>`.
 - Keep the Task verbatim. If the Human changes the task, add the change beneath the original as
   `> Amended in A<n>: <change>`.
@@ -119,8 +135,8 @@ on, so change it in a way that keeps its history readable:
 - Drop a slice or supersede a decision by striking its title and saying why, keeping its text:
   `### ~~<taskID>-S4 — <title>~~ — dropped in A<n>: <reason>`,
   `- ~~**D3 — <decision>**~~ — superseded by D7 in A<n>`.
-- If the Plan has no `Alignment log` section (it predates this mode), add one right before the
-  Implementation log.
+- If the Plan has no `Alignment log` section (it predates this mode), add one at the end of
+  `plan.md`.
 
 ## Alignment log entry
 
@@ -129,7 +145,7 @@ Each Plan Alignment and each Final Architect Audit appends one entry at the end 
 
 ```markdown
 ### A<n> — <YYYY-MM-DD> — Plan Alignment | Final Architect Audit
-- **Checked**: <what you read, e.g. "S2 rounds 1–2, S3 round 1; code-review-report-TASK-12-2">
+- **Checked**: <what you read, e.g. "S2 rounds 1–2, S3 round 1; code-review-report-TASK-12-S3-1">
 - **Slice status**: <S1 done · S2 done · S3 blocked · S4 not started>
 - **Attention items**:
   - <item, with its source> → **accept | remediate | decide | dismiss | NEEDS HUMAN**: <resolution and why>
@@ -147,5 +163,5 @@ Each Plan Alignment and each Final Architect Audit appends one entry at the end 
   and revise the Plan — do not send the Independent Programmer to re-implement a mistake.
 - Do not restate the whole codebase in the Plan or a report. Reference paths (`src/foo.ts:120-160`)
   and quote only the chunk that proves the point.
-- The Implementation log and the Code Review Reports belong to the other roles: read them, never
+- The Implementation logs and the Code Review Reports belong to the other roles: read them, never
   edit them.

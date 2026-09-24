@@ -1,7 +1,7 @@
 # Planning
 
-Turn the task into `.harman/plan.md`. The shared sections of `SKILL.md` — artifacts and ids,
-*Operating principles*, *Rules* — apply throughout.
+Turn the task into `$HARMAN_DIR/<taskID>/plan.md`. The shared sections of `SKILL.md` — artifacts
+and ids, *Operating principles*, *Rules* — apply throughout.
 
 1. **Read the task.** Capture it verbatim in the Plan; do not silently reinterpret it.
 2. **Study the code.** Find the modules, seams, and abstractions the change lands in. Identify prior
@@ -23,12 +23,15 @@ Turn the task into `.harman/plan.md`. The shared sections of `SKILL.md` — arti
    - is detailed enough that the implementer makes no architectural decisions — name files, types,
      signatures, and call sites where you already know them;
    - declares its dependencies on other slices;
+   - may be built at the same time as any slice it has no dependency path to, each in its own
+     worktree — so two such slices must not touch the same file; if they would, make one depend on
+     the other;
    - carries a **completion criteria** that is checkable (a passing test, an observable behaviour, a
      command that exits clean). If a slice truly cannot have one, write
      `Completion criteria: none — <why>` rather than inventing a vague one.
-7. **Write the Plan** and tell the Human the path plus the slice count. A task too small to
-   decompose still gets a single-slice Plan rather than no artifact — downstream roles depend on the
-   file existing.
+7. **Write the Plan** and tell the Human the path, the slice count, and which slices can be built
+   in parallel. A task too small to decompose still gets a single-slice Plan rather than no
+   artifact — downstream roles depend on the file existing.
 
 ## Plan template
 
@@ -36,6 +39,7 @@ Turn the task into `.harman/plan.md`. The shared sections of `SKILL.md` — arti
 # Plan: <taskID> — <short title>
 
 - **Base**: <short sha of HEAD when the Plan was written, noting a dirty working tree — or "none" outside git>
+- **Implementation logs**: `log/<taskID>-S<n>.md` next to this file, one per slice, written by the Independent Programmer
 
 ## 1. Task
 <the initial task/issue, as given>
@@ -75,8 +79,5 @@ flowchart TD
 ...
 
 ## 6. Alignment log
-<!-- Appended by the Architect: one entry per Plan Alignment and per Final Architect Audit. -->
-
-## 7. Implementation log
-<!-- Appended by the Independent Programmer. Always the last section; the Architect does not edit it. -->
+<!-- Appended by the Architect: one entry per Plan Alignment and per Final Architect Audit. Always the last section. -->
 ````

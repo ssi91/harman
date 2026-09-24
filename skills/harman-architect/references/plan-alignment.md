@@ -9,16 +9,19 @@ or adds slices that bring the code back to the Plan.
 *Slice status*, *Operating principles*, *Editing the live Plan*, and *Alignment log entry* below
 refer to the sections of `SKILL.md`.
 
-1. **Read what is new since your last Alignment log entry** — Implementation log entries (with the
-   Independent Programmer's applied and rejected findings), Code Review Reports, and any feedback the
-   Human gives you now. If nothing is new, say so and stop: there is nothing to align.
+1. **Read what is new since your last Alignment log entry** — entries in the slices' Implementation
+   logs (with the Independent Programmers' applied and rejected findings), Code Review Reports, and
+   any feedback the Human gives you now. If nothing is new, say so and stop: there is nothing to
+   align.
 2. **Take the status of every slice** (see *Slice status*).
 3. **Check the code**, at the Plan's level of detail — line-level correctness is the Reviewer's job.
-   For each slice that became done since your last entry: are the files, types, signatures,
-   contracts, module boundaries, and dependency directions its instructions and decisions
-   prescribed actually there? Compare what changed since `Base` (`git diff --stat <Base>`, plus
-   untracked files, minus `.harman/`) with the files the log names: a changed file no entry accounts
-   for is unlogged work. Then check that the code the remaining slices build on still matches their
+   Slices built in parallel live in other worktrees: look for each slice's code where its log says
+   it is — worktree, branch, and commit. For each slice that became done since your last entry: are
+   the files, types, signatures, contracts, module boundaries, and dependency directions its
+   instructions and decisions prescribed actually there? Compare what changed since `Base` — in your
+   checkout (`git diff --stat <Base>`, plus untracked files, minus `.harman/`) and in each slice's
+   worktree or commit — with the files the logs name: a changed file no entry accounts for is
+   unlogged work. Then check that the code the remaining slices build on still matches their
    instructions — paths, names, signatures, line references.
 4. **Collect what needs your attention**:
    - `BLOCKED` questions, and reports that a Plan instruction is wrong or impossible;

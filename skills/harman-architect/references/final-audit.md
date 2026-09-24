@@ -9,14 +9,19 @@ what the Plan says.
 *Slice status*, *Editing the live Plan*, and *Alignment log entry* below refer to the sections of
 `SKILL.md`.
 
-1. **Check the precondition**: every slice that is not dropped is `done` (see *Slice status*). If
-   one is not, name the outstanding slices and stop — offer Plan Alignment instead.
+1. **Check the precondition**: every slice that is not dropped is `done` (see *Slice status*), and
+   its code is in the checkout you audit — for a slice built in another worktree, its log ends on a
+   commit with no uncommitted changes, and that commit is an ancestor of `HEAD`
+   (`git merge-base --is-ancestor <sha> HEAD`). If a slice is not done, name the outstanding slices
+   and stop — offer Plan Alignment instead. If a done slice is not merged here, or you cannot tell,
+   name it and stop: the Human integrates it first.
 2. **Set the audit scope**: from the Plan's `Base` to the working tree — `git diff <Base>` plus
    untracked files, excluding `.harman/` — or the paths or range the Human gives. With neither a
    `Base` nor a range, ask.
 3. **Reconstruct the Plan as it stands**: the current decisions and slices with every revision, plus
-   both logs and the Code Review Reports for how they got there. The implementation is audited
-   against the current Plan; an alignment revision is history, not a deviation.
+   the Alignment log, the Implementation logs, and the Code Review Reports for how they got there.
+   The implementation is audited against the current Plan; an alignment revision is history, not a
+   deviation.
 4. **Audit top-down**, recording every item you check in the report's *Conformance* table:
    - **Task** — re-read it verbatim. Does the implementation as a whole meet each requirement? Is
      each blind spot handled the way its decision said?
@@ -39,8 +44,8 @@ what the Plan says.
 7. **Resolve each deviation**: **accept** (the Plan is revised to the as-built state), **remediate**
    (a remediation slice is added; the Independent Programmer implements it like any other), or
    **NEEDS HUMAN** (with your recommended default). Then set the verdict.
-8. **Write the report** to `.harman/architect-audit-report-<taskID>-<reportID>.md`. `reportID`
-   starts at `0` and increments per audit round: list the existing
+8. **Write the report** to `$HARMAN_DIR/<taskID>/architect-audit-report-<taskID>-<reportID>.md`.
+   `reportID` starts at `0` and increments per audit round: list the existing
    `architect-audit-report-<taskID>-*` files and take the next number — never overwrite a report.
    Then align the Plan to the report's resolutions, following *Editing the live Plan*, and append an
    entry in the *Alignment log entry* format that names the report and its verdict.
@@ -95,7 +100,7 @@ Human stops it.
 # Architect Audit Report <taskID>-<reportID>
 
 - **Task**: <taskID> — <title>
-- **Plan**: `.harman/plan.md` — <n> slices, Alignment log through A<n>
+- **Plan**: `plan.md` — <n> slices, Alignment log through A<n>
 - **Scope audited**: <git range and untracked files, or paths>
 - **Date**: <YYYY-MM-DD>
 - **Verdict**: conforms | conforms with accepted deviations | does not conform
