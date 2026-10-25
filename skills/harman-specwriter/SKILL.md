@@ -55,7 +55,10 @@ template. The rest of this file is shared by both.
    Technical Specification, the General Specification behind it.
 3. **Sort what the sources say** against the document's components: *stated* — said plainly, ready
    to write; *inferred* — your reading rather than theirs, so a proposal; *missing*; *conflicting* —
-   two sources, or a source and the existing document, disagree.
+   two sources, or a source and the existing document, disagree. A source is input, not text to
+   transplant: take its decisions, rules, thresholds and definitions, and fit each into a component
+   — the reference says where common material goes. Its reasons, examples and bookkeeping (version
+   history, status lines, change notes, checklists against other documents) stay in the source.
 4. **Interview the Human** about everything inferred, missing, or conflicting (see *Asking*),
    component by component in the order the reference gives — each builds on the ones before it.
 5. **Draft and check**: confirmed content only, and every unanswered item as an open question (see
@@ -73,6 +76,14 @@ The document is only as good as the answers behind it, so the interview is the c
 
 - Ask in small batches of related questions, the most foundational first — with your agent's
   question tool when it has one, otherwise in plain text. Name the component each question serves.
+- **Every question stands alone.** Put whatever it refers to — a table, a wording, a definition —
+  in its text or in an option's preview: text written before the question tool may not be visible
+  while the Human answers. Use no shorthand or source jargon the Human has not defined: give a
+  one-line meaning for any term not yet in the Glossary, and a worked example with numbers for
+  anything abstract. Count exactly what you show, and in a preview put each heading above the items
+  it groups.
+- A round that comes back marked for clarification still carries the answers given: take them, and
+  ask the rest again at once.
 - **You may propose.** Offer two or three concrete options with their trade-offs and say which you
   recommend and why. A proposal is a question, not content: it enters the document only once the
   Human picks or confirms it. When the Human asks you to draft a component yourself, the draft is a
@@ -122,7 +133,17 @@ starts from them:
   word for a Glossary term, write the term; a new term is defined with the Human and added.
 - **Names agree** across the text, the tables, and the diagrams.
 - **No narration**: text says what its component needs and stops — no marketing tone, no filler, no
-  retelling of what a diagram already shows.
+  retelling of what a diagram or a table already shows. A source's reasons, examples and asides are
+  narration too: write the decision, the rule or the threshold, not why it was chosen, unless the
+  Human asks for the why.
+- **Format follows content**: whatever can be a list is a list; items that share attributes are a
+  table; a diagram goes only where it shows what a list or a table can't — structure, a flow, a real
+  branch. A decision read from two measures is a 2×2 table, not a tree, and no diagram ends its
+  branches in a node that decides nothing.
+- **Exact scope**: a claim keeps the scope its source gives it — a statement about two tools is not
+  widened to their whole category.
+- **Nothing dangling**: after any cut or move, every term the text still uses is defined, every rule
+  it relies on is still there — reasons go, rules stay — and every "see …" leads somewhere.
 - **Nothing unconfirmed**: every statement traces back to the Human, a source, or a confirmed
   proposal.
 
