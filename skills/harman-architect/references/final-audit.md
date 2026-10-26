@@ -6,8 +6,8 @@ second code review — line-level defects you happen to see go under *Observatio
 route to a Reviewer. Your findings are **deviations**: places where the real implementation is not
 what the Plan says.
 
-*Slice status*, *Editing the live Plan*, and *Alignment log entry* below refer to the sections of
-`SKILL.md`.
+*Writing the artifacts* and *Diagrams* in `SKILL.md` apply to the report; *Slice status*, *Editing
+the live Plan*, and *Alignment log entry* below refer to its sections too.
 
 1. **Check the precondition**: every slice that is not dropped is `done` (see *Slice status*), and
    its code is in the checkout you audit — for a slice built in another worktree, its log ends on a
@@ -27,7 +27,8 @@ what the Plan says.
      each blind spot handled the way its decision said?
    - **Decisions** — is every `D<n>` honoured in the code, and every listed refactor done?
    - **Architecture** — do module boundaries, abstractions, dependency directions, public contracts,
-     and data shapes match the Plan? If the Plan has a decision graph, hold the code up against it.
+     and data shapes match the Plan? Hold the code up against the Plan's diagrams — its architecture,
+     flows, contracts and data, and decision graph.
    - **Slices** — was each slice built as instructed and within its scope? Re-run every completion
      criterion against the final code: a later slice can break an earlier one. If a criterion cannot
      be run here, say why and mark the log's evidence as the only evidence.
@@ -81,12 +82,18 @@ Human stops it.
 
 ## Mermaid conventions
 
-- **Per deviation** — two subgraphs, `Planned` and `Actual`, side by side. Prefix node ids per
-  subgraph (`p_`, `a_`): mermaid merges nodes that share an id, which silently collapses the
-  comparison.
-- **As-built graph** — the Plan's decision graph, or the component graph it implies, redrawn as
-  built, with deviations marked by class (`node:::deviated`): `deviated` — built differently;
-  `unplanned` — built, not in the Plan; `missing` — in the Plan, not built.
+- **Per deviation** — the planned structure next to the actual one, each in the diagram its content
+  calls for (see *Diagrams*):
+  - components — one `flowchart` with two subgraphs, `Planned` and `Actual`, side by side. Prefix
+    node ids per subgraph (`p_`, `a_`): mermaid merges nodes that share an id, which silently
+    collapses the comparison;
+  - a flow — two sequence diagrams, Planned then Actual;
+  - a contract, a code-level dependency, or a data shape — two class or ER diagrams, Planned then
+    Actual.
+- **As-built graph** — the Plan's architecture diagram redrawn as built (for a Plan without one, the
+  component graph its decisions imply), with deviations marked by class instead of the Plan's
+  change classes (`node:::deviated`): `deviated` — built differently; `unplanned` — built, not in
+  the Plan; `missing` — in the Plan, not built.
 
   ```
   classDef deviated stroke:#d33,stroke-width:3px
@@ -107,7 +114,11 @@ Human stops it.
 - **Deviations**: <n> (<n> critical, <n> high, <n> medium, <n> low) — <n> accepted, <n> to remediate, <n> NEEDS HUMAN
 
 ## Previous audit
-<from reportID 1 on: each open deviation of the previous report → resolved | still open (now DV<n>) — or omit the section>
+<from reportID 1 on — or omit the section>
+
+| Deviation in the previous report | Now |
+| --- | --- |
+| DV<n> — <title> | resolved — <how> · still open — now DV<n> |
 
 ## Conformance
 
@@ -118,7 +129,7 @@ Human stops it.
 | <taskID>-S1 — <title> | conforms / deviates (DV<n>) | <criterion> → <command re-run, result> |
 
 ## As-built graph
-<the Plan's decision graph redrawn as built, classes from Mermaid conventions — or omit the section when no deviation is structural>
+<the Plan's architecture diagram redrawn as built, classes from Mermaid conventions — or omit the section when no deviation is structural>
 
 ## Deviations
 
@@ -130,27 +141,27 @@ Human stops it.
 
 **Description**
 
-*Planned* — <what the Plan prescribes, quoted or pinpointed>
-
-*Actual* — <what was built>
+| | Planned | Actual |
+| --- | --- | --- |
+| <aspect: a boundary, a dependency, a contract, a flow, a location> | <what the Plan prescribes, quoted or pinpointed> | <what was built> |
 
 `path/to/file.ts:120-135`
 ````<lang>
 <the relevant chunk>
 ````
 
-*Why* — <the reason given in the logs; or "reconstructed:" and your reading of the code and commits>
-
-*Impact* — <what the divergence costs: the decision or principle it breaks, what the next change pays for it>
+- **Why**: <the reason given in the logs — or "reconstructed:" and your reading of the code and commits>
+- **Impact**: <the decision or principle it breaks; what the next change pays for it>
 
 **Graph**
 ```mermaid
 flowchart LR
   subgraph planned [Planned]
-    p_svc[OrderService] --> p_port[PaymentPort] --> p_stripe[StripeAdapter]
+    p_api[OrderAPI] -->|OrderPlaced| p_q[/orders/]
+    p_q -->|OrderPlaced| p_bill[BillingService]
   end
   subgraph actual [Actual]
-    a_svc[OrderService] --> a_stripe[StripeAdapter]
+    a_api[OrderAPI] -->|BillingService.charge| a_bill[BillingService]
   end
 ```
 <omit for a deviation with no structural side>

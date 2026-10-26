@@ -6,8 +6,9 @@ was wrong. Later slices, reviews, and the final audit all rely on the Plan, so a
 misleads them. Plan Alignment brings the two back together — it updates the Plan to match the code,
 or adds slices that bring the code back to the Plan.
 
-*Slice status*, *Operating principles*, *Editing the live Plan*, and *Alignment log entry* below
-refer to the sections of `SKILL.md`.
+*Writing the artifacts* and *Diagrams* in `SKILL.md` apply to everything you write; *Slice status*,
+*Operating principles*, *Editing the live Plan*, and *Alignment log entry* below refer to its
+sections too.
 
 1. **Read what is new since your last Alignment log entry** — entries in the slices' Implementation
    logs (with the Independent Programmers' applied and rejected findings), Code Review Reports, and
@@ -18,7 +19,7 @@ refer to the sections of `SKILL.md`.
    Slices built in parallel live in other worktrees: look for each slice's code where its log says
    it is — worktree, branch, and commit. For each slice that became done since your last entry: are
    the files, types, signatures, contracts, module boundaries, and dependency directions its
-   instructions and decisions prescribed actually there? Compare what changed since `Base` — in your
+   instructions, decisions, and diagrams prescribed actually there? Compare what changed since `Base` — in your
    checkout (`git diff --stat <Base>`, plus untracked files, minus `.harman/`) and in each slice's
    worktree or commit — with the files the logs name: a changed file no entry accounts for is
    unlogged work. Then check that the code the remaining slices build on still matches their
@@ -39,8 +40,8 @@ refer to the sections of `SKILL.md`.
      `<taskID>-S<n>`, does not reproduce). Out-of-scope problems are still reported to the Human;
    - **NEEDS HUMAN** — product intent or an external constraint; give your recommended default so
      work is not blocked meanwhile.
-6. **Align the Plan** — decisions, slices, and the decision graph if decisions changed — following
-   *Editing the live Plan*.
+6. **Align the Plan** — decisions, slices, and every diagram they reach — following *Editing the
+   live Plan*.
 7. **Append an entry** in the *Alignment log entry* format, even when the Plan did not change: it is the checkpoint your
    next alignment and the audit start from.
 8. **Tell the Human**: the slice status, what changed in the Plan, what NEEDS HUMAN, and which slices
