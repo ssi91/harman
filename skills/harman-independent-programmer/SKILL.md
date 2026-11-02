@@ -23,9 +23,15 @@ lies inside a `.git` directory (a submodule), there is no main worktree: ask the
 to the store, stop and tell the Human which path needs write access — a local copy would silently
 split the state. Each task has its own folder, `$HARMAN_DIR/<taskID>/`.
 
-- Plan: `$HARMAN_DIR/<taskID>/plan.md` — the task, decisions, slices, and the Architect's
-  `Alignment log`. Only the Architect writes it, revising it in place between slices (Plan
-  Alignment), so re-read it before every slice.
+- Plan: the folder `$HARMAN_DIR/<taskID>/plan/`. Only the Architect writes it, revising it in place
+  between slices (Plan Alignment), so re-read it before every slice:
+  - `plan.md` — the entry point: the task, the Blind spots and Decisions as one-line Extractions
+    linked to their documents, the change, the slices, and the Architect's `Alignment log`;
+  - `bs-<n>.md` and `decision-<n>.md` — the Detailed document of each Blind spot and each Decision;
+    a Decision's document draws what it changes;
+  - `glossary.md` — the Plan Glossary: the names of the code entities the Plan mentions, plus its
+    domain terms when the project has no General Specification. `plan.md`'s header links every
+    Glossary the Plan relies on.
 - Implementation logs: `$HARMAN_DIR/<taskID>/log/<taskID>-S<n>.md`, one per slice. You create your
   slice's log when you claim the slice, and you write no other.
 - Review reports: `$HARMAN_DIR/<taskID>/code-review-report-<taskID>-S<n>-<reportID>.md`, numbered
@@ -38,9 +44,13 @@ split the state. Each task has its own folder, `$HARMAN_DIR/<taskID>/`.
 
 ## Process
 
-1. **Read the whole Plan**, not just your slice: the task, the decisions, the Alignment log, and the
-   other slices' Implementation logs. Earlier slices — and the Architect's revisions — constrain
-   yours.
+1. **Read the whole Plan**, not just your slice — earlier slices, and the Architect's revisions,
+   constrain yours:
+   - `plan.md`: the task, the Decisions, the slices, and the Alignment log;
+   - the Detailed documents of the Decisions your slice implements — the Decisions table's *Slices*
+     column names them — and of the Blind spots they close;
+   - the Glossaries the Plan relies on;
+   - the other slices' Implementation logs.
 2. **Confirm the slice is unblocked** — each dependency is done: logged `done`, or, with a Reviewer
    in the topology, its latest Code Review Report has zero findings (or the Human closed it). Each
    dependency's code must also be in your checkout: built in it, or its log ends on a commit with no
@@ -54,8 +64,12 @@ split the state. Each task has its own folder, `$HARMAN_DIR/<taskID>/`.
    with `set -C`, which refuses to overwrite — so two agents cannot claim the same slice. If it
    exists, the slice is taken: go on only if the Human handed it back to you (an answered block);
    otherwise stop and say so.
-4. **Implement exactly the slice's instructions**, inside its stated scope. Match the surrounding
-   code's idiom.
+4. **Implement exactly the slice's instructions**, inside its stated scope:
+   - match the surrounding code's idiom;
+   - name every code entity the Plan mentions — a module, service, class, interface, event, data
+     store, or table — as its Glossary names it;
+   - for a Decision marked NEEDS HUMAN, implement its recommended default: work goes on with it
+     until the Human answers.
 5. **Verify against the completion criteria** literally. Run the command, the test, the check. Never
    report a criterion as met without executing it.
 6. **Append an entry to your slice's log** (see *Implementation log*).
@@ -81,16 +95,17 @@ stop; do not quietly implement something else.
 
 ## Handling a review report
 
-1. Read the report and the Plan section it refers to.
+1. Read the report and the parts of the Plan it refers to — `plan.md` and the Detailed documents it
+   links.
 2. **Validate each finding on its merits** — reproduce it where the report gives steps or a PoC.
    You are not obliged to accept a finding; you are obliged to judge it.
 3. Implement the accepted findings in severity order (`critical` → `low`), honouring the Plan's
-   decisions. If a fix would require an architectural decision, escalate as above instead of
+   Decisions. If a fix would require an architectural decision, escalate as above instead of
    improvising. Severity ranks the work; it does not decide acceptance — a `low` finding you agree
    with still gets fixed, a `critical` one you can disprove still gets rejected with a rationale.
 4. For each rejected finding, record a concrete rationale (why it does not reproduce, why it is out
-   of the slice's scope, why the recommendation conflicts with decision D<n>). "Disagree" is not a
-   rationale.
+   of the slice's scope, why the recommendation conflicts with Decision
+   [D<n>](../plan/decision-<n>.md)). "Disagree" is not a rationale.
 5. Re-verify the completion criteria, then append a new log entry for the review round.
 6. If a Reviewer is in the topology, await the next report. The loop ends when a report has no
    findings, or when the Human stops it.
@@ -99,6 +114,19 @@ stop; do not quietly implement something else.
 
 Your slice's log is `$HARMAN_DIR/<taskID>/log/<taskID>-S<n>.md`. Append each entry at the end of the
 file and never rewrite earlier ones — the log is append-only history.
+
+Write every entry in the Plan's link and term format; links are relative to `log/`:
+- every mention of a Blind spot, a Decision, or a slice links to it:
+  - a Blind spot → `../plan/bs-<n>.md`;
+  - a Decision → `../plan/decision-<n>.md`;
+  - a slice → `../plan/plan.md#<taskID>-S<n>`;
+- every term from a Glossary the Plan relies on is inline code at every mention — `` `Order` `` —
+  and links, at its first mention under each heading, to the Glossary that defines it: the General
+  Specification's for a domain term it holds, `../plan/glossary.md` otherwise;
+- the exceptions:
+  - quoted code stays as it is in the code;
+  - a heading holds no links: a term in it is inline code, and its first mention under the heading
+    carries the link.
 
 The claim entry opens the file:
 
@@ -139,5 +167,5 @@ sandbox can make the git directory read-only), log the uncommitted changes and t
   into the diff — the Architect triages them.
 - Report verification results faithfully, including failures. A failing check is information the
   Reviewer and the Human need.
-- Do not write a Code Review Report or an Architect Audit Report, and do not edit `plan.md` or
-  another slice's log — those belong to the other roles.
+- Do not write a Code Review Report or an Architect Audit Report, and do not edit the Plan's files
+  (`plan/`) or another slice's log — those belong to the other roles.

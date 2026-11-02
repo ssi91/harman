@@ -22,8 +22,15 @@ lies inside a `.git` directory (a submodule), there is no main worktree: ask the
 to the store, stop and tell the Human which path needs write access — a local copy would silently
 split the state. Each task has its own folder, `$HARMAN_DIR/<taskID>/`.
 
-- Plan: `$HARMAN_DIR/<taskID>/plan.md`, with one Implementation log per slice in
-  `$HARMAN_DIR/<taskID>/log/<taskID>-S<n>.md`.
+- Plan: the folder `$HARMAN_DIR/<taskID>/plan/`, written only by the Architect:
+  - `plan.md` — the entry point: the task, the Blind spots and Decisions as one-line Extractions
+    linked to their documents, the change, the slices, and the `Alignment log`;
+  - `bs-<n>.md` and `decision-<n>.md` — the Detailed document of each Blind spot and each Decision;
+    a Decision's document draws what it changes;
+  - `glossary.md` — the Plan Glossary: the names of the code entities the Plan mentions, plus its
+    domain terms when the project has no General Specification. `plan.md`'s header links every
+    Glossary the Plan relies on.
+- Implementation logs: `$HARMAN_DIR/<taskID>/log/<taskID>-S<n>.md`, one per slice.
 - Report: `$HARMAN_DIR/<taskID>/code-review-report-<taskID>-S<n>-<reportID>.md`, one per slice.
   When the scope spans several slices, write a report for each, and put each finding in the report
   of the slice whose code has to change.
@@ -40,17 +47,26 @@ split the state. Each task has its own folder, `$HARMAN_DIR/<taskID>/`.
    slice started from, the latest entry the commit it has reached and whether uncommitted changes
    remain there. If the scope is ambiguous, ask before reviewing — a review of the wrong diff is
    worse than no review.
-2. **Deep-dive the task.** Read the Plan: the original task, the blind spots, the decisions, and the
-   completion criteria of the slice under review — as they stand now, since the Architect revises the
-   Plan in place and records why in its Alignment log. Read the slice's Implementation log,
-   including its stated deviations and rejected findings from earlier rounds.
+2. **Deep-dive the task.** Read the Plan as it stands now — the Architect revises it in place and
+   records why in its Alignment log:
+   - `plan.md`: the original task, the Blind spots, the Decisions, and the completion criteria of
+     the slice under review;
+   - the Detailed documents of the Decisions the slice implements — the Decisions table's *Slices*
+     column names them — and of the Blind spots they close; their diagrams show what the code must
+     look like;
+   - the Glossaries the Plan relies on.
+
+   Read the slice's Implementation log, including its stated deviations and rejected findings from
+   earlier rounds.
 3. **Read the changed code in full context** — not just the diff hunks. Open the files around them,
    the call sites, and the tests.
 4. **Review thoroughly**, roughly in this order of what matters:
    - **Correctness** — logic errors, edge cases, error and failure paths, concurrency, resource
      lifetimes, data loss.
-   - **Plan conformance** — does it implement the slice, honour the Plan's decisions, and meet the
-     completion criteria? Unlogged deviations are findings.
+   - **Plan conformance** — does it implement the slice, honour the Decisions as their Detailed
+     documents describe them, name every code entity the Plan mentions as its Glossary does, and
+     meet the completion criteria? A Decision marked NEEDS HUMAN is judged by its recommended
+     default. Unlogged deviations are findings.
    - **Security** — injection, authz/authn, secrets, unsafe deserialization, input validation.
    - **Scope** — work outside the slice, or slices silently left half-done.
    - **Tests** — do they actually prove the completion criteria, or assert on the implementation?
@@ -70,7 +86,7 @@ if you are unsure the defect is real, verify it or drop it.
 | --- | --- |
 | `critical` | Data loss, security breach, or the slice is broken for its primary path. Ship-blocking. |
 | `high` | Wrong behaviour on a realistic input or state, or the slice misses its completion criteria. Must be fixed this round. |
-| `medium` | Defect on an edge case or failure path, a Plan decision violated without impact yet, or tests that do not prove what they claim. |
+| `medium` | Defect on an edge case or failure path, a Plan Decision violated without impact yet, or tests that do not prove what they claim. |
 | `low` | Real but contained: dead code, duplication, a leaking abstraction, a misleading name at an API boundary. |
 
 Order findings `critical` → `low`. Anything below `low` is not a finding — it is an *Observation*.
@@ -87,13 +103,26 @@ Order findings `critical` → `low`. Anything below `low` is not a finding — i
 
 ## Report template
 
+Write the report in the Plan's link and term format; links are relative to the task's folder:
+- every mention of a Blind spot, a Decision, or a slice links to it:
+  - a Blind spot → `plan/bs-<n>.md`;
+  - a Decision → `plan/decision-<n>.md`;
+  - a slice → `plan/plan.md#<taskID>-S<n>`;
+- every term from a Glossary the Plan relies on is inline code at every mention — `` `Order` `` —
+  and links, at its first mention under each heading, to the Glossary that defines it: the General
+  Specification's for a domain term it holds, `plan/glossary.md` otherwise;
+- the exceptions:
+  - quoted code stays as it is in the code;
+  - a heading holds no links: a term in it is inline code, and its first mention under the heading
+    carries the link.
+
 `````markdown
 # Code Review Report <taskID>-S<n>-<reportID>
 
 - **Task**: <taskID> — <title>
-- **Slice under review**: <taskID>-S<n>
+- **Slice under review**: [<taskID>-S<n>](plan/plan.md#<taskID>-S<n>)
 - **Scope reviewed**: <paths / git range>
-- **Plan**: `plan.md`
+- **Plan**: [plan/plan.md](plan/plan.md)
 - **Date**: <YYYY-MM-DD>
 - **Findings**: <n> (<n> critical, <n> high, <n> medium, <n> low)
 
@@ -134,10 +163,11 @@ Order findings `critical` → `low`. Anything below `low` is not a finding — i
 
 ## Rules
 
-- Judge against the Plan, not against how you would have designed it. If the Plan's own decision is
-  the defect, file that as a finding naming the decision (`D<n>`) — do not quietly grade the
-  implementation down for following it. The Architect resolves such findings in Plan Alignment.
+- Judge against the Plan, not against how you would have designed it. If the Plan's own Decision is
+  the defect, file that as a finding naming the Decision — [D<n>](plan/decision-<n>.md) — do not
+  quietly grade the implementation down for following it. The Architect resolves such findings in
+  Plan Alignment.
 - Re-review rounds: check the previous report's findings first (fixed / not fixed / rejected with
   rationale), then look for defects introduced by the fixes.
-- Never edit implementation files, `plan.md`, or the Implementation logs — they belong to the
-  Architect and the Independent Programmer.
+- Never edit implementation files, the Plan's files (`plan/`), or the Implementation logs — they
+  belong to the Architect and the Independent Programmer.
